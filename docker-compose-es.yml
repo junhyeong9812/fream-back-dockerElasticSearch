@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  elasticsearch:
+    container_name: es_prod
+    build:
+      context: .           # 저장소 구조에 맞춰서 수정
+      dockerfile: docker/elasticsearch/Dockerfile-kibana-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # t2.micro 등 작은 메모리에 맞춰 JVM 힙 최소화 (테스트용)
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      # 데이터 볼륨(ES 인덱스 파일) - 도커 내부 볼륨
+      - es_data_prod:/usr/share/elasticsearch/data
+      # 로그 디렉토리(호스트 마운트)
+      - /home/ubuntu/es_logs:/usr/share/elasticsearch/logs
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    container_name: kibana_prod
+    build:
+      context: .          # 저장소 구조에 맞춰서 수정
+      dockerfile: docker/elasticsearch/Dockerfile-kibana-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+
+volumes:
+  es_data_prod:
