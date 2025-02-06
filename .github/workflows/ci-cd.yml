@@ -1,0 +1,35 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          # GitHub Secrets에서 가져온 SSH 개인키
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to server
+        env:
+          # 깃헙 시크릿을 환경변수로 연결
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+      # StrictHostKeyChecking=no로 호스트 키 검증 건너뜀(테스트용)
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'ENDSSH'
+        # 여기서부터 원격 서버에서 실행할 명령어
+            cd ~/fream-back-dockerElasticSearch
+            git pull origin main
+            docker compose -f docker-compose-es.yml pull
+            docker compose -f docker-compose-es.yml up -d
+            exit
+          ENDSSH
