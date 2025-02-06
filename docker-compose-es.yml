@@ -4,7 +4,7 @@ services:
     container_name: es_prod
     build:
       context: .           # 저장소 구조에 맞춰서 수정
-      dockerfile: docker/elasticsearch/Dockerfile-kibana-elasticsearch
+      dockerfile: Dockerfile-kibana-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -26,7 +26,7 @@ services:
     container_name: kibana_prod
     build:
       context: .          # 저장소 구조에 맞춰서 수정
-      dockerfile: docker/elasticsearch/Dockerfile-kibana-kibana
+      dockerfile: Dockerfile-kibana-kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
